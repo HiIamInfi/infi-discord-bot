@@ -1,3 +1,7 @@
+# VS Code settings
+.vscode/
+*.code-workspace
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -205,3 +209,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# MacOS
+.DS_Store
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# Project-specific
+infi-discord-bot-env/
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm

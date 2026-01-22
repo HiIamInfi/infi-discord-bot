@@ -1,0 +1,18 @@
+services:
+  bot:
+    build: .
+    container_name: infi-discord-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=/app/data/bot.db
+    volumes:
+      - bot-data:/app/data
+    # For development, uncomment to mount code
+    # volumes:
+    #   - ./bot:/app/bot:ro
+    #   - bot-data:/app/data
+
+volumes:
+  bot-data:
