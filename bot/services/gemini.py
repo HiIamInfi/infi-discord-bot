@@ -11,7 +11,7 @@ logger = get_logger("gemini")
 class GeminiService:
     """Service for interacting with Google Gemini API."""
 
-    def __init__(self, api_key: str, model: str = "gemini-2.0-flash") -> None:
+    def __init__(self, api_key: str, model: str = "gemini-3-flash-preview") -> None:
         """Initialize the Gemini service.
 
         Args:

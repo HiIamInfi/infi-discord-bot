@@ -125,6 +125,39 @@ class Admin(commands.Cog):
             )
             logger.info(f"Synced {len(synced)} commands globally")
 
+    @commands.command(name="cogs")
+    @commands.is_owner()
+    async def list_cogs(self, ctx: commands.Context) -> None:
+        """List all loaded cogs.
+
+        Args:
+            ctx: Command context.
+        """
+        cog_names = list(self.bot.cogs.keys())
+        await ctx.send(f"Loaded cogs ({len(cog_names)}): {', '.join(cog_names)}")
+
+    @commands.command(name="sync")
+    @commands.is_owner()
+    async def sync_text(self, ctx: commands.Context, guild_only: bool = False) -> None:
+        """Sync slash commands via text command.
+
+        Args:
+            ctx: Command context.
+            guild_only: If True, sync only to the current guild.
+        """
+        async with ctx.typing():
+            if guild_only and ctx.guild:
+                self.bot.tree.copy_global_to(guild=ctx.guild)
+                synced = await self.bot.tree.sync(guild=ctx.guild)
+                cmd_names = ", ".join(cmd.name for cmd in synced)
+                await ctx.send(f"Synced {len(synced)} commands to this guild: {cmd_names}")
+                logger.info(f"Synced {len(synced)} commands to guild {ctx.guild.id}: {cmd_names}")
+            else:
+                synced = await self.bot.tree.sync()
+                cmd_names = ", ".join(cmd.name for cmd in synced)
+                await ctx.send(f"Synced {len(synced)} commands globally: {cmd_names}")
+                logger.info(f"Synced {len(synced)} commands globally: {cmd_names}")
+
     @commands.command(name="shutdown")
     @commands.is_owner()
     async def shutdown(self, ctx: commands.Context) -> None:

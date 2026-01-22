@@ -40,6 +40,7 @@ class InfiBot(commands.Bot):
         self.http_session: aiohttp.ClientSession | None = None
         self.gemini: GeminiService | None = None
         self.w2g: Watch2GetherService | None = None
+        self._synced: bool = False  # Track if commands have been synced
 
     async def _get_prefix(
         self,
@@ -108,6 +109,7 @@ class InfiBot(commands.Bot):
             "bot.cogs.general",
             "bot.cogs.gemini",
             "bot.cogs.watch2gether",
+            "bot.cogs.moderation",
         ]
 
         for cog in cogs:
@@ -121,6 +123,16 @@ class InfiBot(commands.Bot):
         """Called when the bot is ready."""
         logger.info(f"Logged in as {self.user} (ID: {self.user.id})")
         logger.info(f"Connected to {len(self.guilds)} guilds")
+
+        # Sync slash commands once on first ready
+        if not self._synced:
+            try:
+                synced = await self.tree.sync()
+                cmd_names = ", ".join(cmd.name for cmd in synced)
+                logger.info(f"Synced {len(synced)} slash commands globally: {cmd_names}")
+                self._synced = True
+            except Exception as e:
+                logger.error(f"Failed to sync commands: {e}")
 
         # Set presence
         activity = discord.Activity(
