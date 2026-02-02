@@ -1,0 +1,49 @@
+# Virtual environments
+infi-discord-bot-env/
+.venv/
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# IDE and editor
+.vscode/
+.idea/
+*.code-workspace
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation
+*.md
+docs/
+
+# Local data
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Environment files (secrets should be passed at runtime)
+.env
+.envrc
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Misc
+.DS_Store
+.claude/
