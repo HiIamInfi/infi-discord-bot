@@ -1,0 +1,29 @@
+services:
+  bot:
+    image: hiiaminfi/infi-discord-bot:latest
+    container_name: infi-discord-bot
+    restart: unless-stopped
+    environment:
+      # Required - your Discord bot token
+      - DISCORD_TOKEN=your_discord_bot_token_here
+
+      # Optional - comma-separated list of Discord user IDs for bot owners
+      #- DISCORD_OWNER_IDS=123456789,987654321
+
+      # Optional - command prefix (default: !)
+      #- DISCORD_PREFIX=!
+
+      # Optional - Google Gemini API key for /ask command
+      #- GEMINI_API_KEY=your_gemini_api_key_here
+
+      # Optional - Watch2Gether API key (increases rate limits)
+      #- W2G_API_KEY=your_w2g_api_key_here
+
+      # Production settings
+      - ENVIRONMENT=production
+      - DATABASE_PATH=/app/data/bot.db
+
+      # Optional - enable debug logging
+      #- DEBUG=false
+    volumes:
+      - ./data:/app/data
