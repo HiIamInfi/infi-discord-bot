@@ -1,0 +1,11 @@
+services:
+  bot:
+    image: hiiaminfi/infi-discord-bot:latest
+    container_name: infi-discord-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=/app/data/bot.db
+    volumes:
+      - ./data:/app/data

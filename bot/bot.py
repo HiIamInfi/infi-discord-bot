@@ -121,6 +121,7 @@ class InfiBot(commands.Bot):
 
     async def on_ready(self) -> None:
         """Called when the bot is ready."""
+        assert self.user is not None
         logger.info(f"Logged in as {self.user} (ID: {self.user.id})")
         logger.info(f"Connected to {len(self.guilds)} guilds")
 

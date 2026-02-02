@@ -8,6 +8,9 @@ env/
 .git/
 .gitignore
 
+# GitHub
+.github/
+
 # IDE and editor
 .vscode/
 .idea/
