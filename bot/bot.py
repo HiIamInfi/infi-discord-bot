@@ -1,5 +1,7 @@
 """Custom Discord bot class with initialization logic."""
 
+from pathlib import Path
+
 import aiohttp
 import discord
 from discord.ext import commands
@@ -7,9 +9,11 @@ from discord.ext import commands
 from bot.config import Settings
 from bot.database.connection import Database
 from bot.database.migrations import run_migrations
-from bot.services.gemini import GeminiService
+from bot.services.gemini import GeminiService, load_system_prompt
 from bot.services.watch2gether import Watch2GetherService
 from bot.utils.logging import get_logger
+
+SYSTEM_PROMPT_PATH = Path("data/system_prompt.txt")
 
 logger = get_logger("bot")
 
@@ -84,7 +88,11 @@ class InfiBot(commands.Bot):
 
         # Initialize external services
         if self.settings.gemini_api_key:
-            self.gemini = GeminiService(self.settings.gemini_api_key)
+            system_prompt = load_system_prompt(SYSTEM_PROMPT_PATH)
+            self.gemini = GeminiService(
+                self.settings.gemini_api_key,
+                system_prompt=system_prompt,
+            )
             logger.info("Gemini service initialized")
         else:
             logger.warning("Gemini API key not set, /ask command will be disabled")

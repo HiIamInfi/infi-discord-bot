@@ -10,7 +10,51 @@ from bot.utils.logging import get_logger
 logger = get_logger("cogs.gemini")
 
 # Maximum response length for Discord
-MAX_RESPONSE_LENGTH = 2000
+MAX_MESSAGE_LENGTH = 2000
+
+
+def split_response(text: str, max_length: int = MAX_MESSAGE_LENGTH) -> list[str]:
+    """Split a long response into chunks that fit Discord's message limit.
+
+    Tries to split on paragraph breaks, then newlines, then spaces.
+
+    Args:
+        text: The text to split.
+        max_length: Maximum length per chunk.
+
+    Returns:
+        List of text chunks.
+    """
+    if len(text) <= max_length:
+        return [text]
+
+    chunks = []
+    remaining = text
+
+    while remaining:
+        if len(remaining) <= max_length:
+            chunks.append(remaining)
+            break
+
+        # Find a good split point
+        chunk = remaining[:max_length]
+
+        # Try to split on paragraph break
+        split_pos = chunk.rfind("\n\n")
+        if split_pos == -1 or split_pos < max_length // 2:
+            # Try to split on newline
+            split_pos = chunk.rfind("\n")
+        if split_pos == -1 or split_pos < max_length // 2:
+            # Try to split on space
+            split_pos = chunk.rfind(" ")
+        if split_pos == -1 or split_pos < max_length // 2:
+            # Hard split as last resort
+            split_pos = max_length
+
+        chunks.append(remaining[:split_pos].rstrip())
+        remaining = remaining[split_pos:].lstrip()
+
+    return chunks
 
 
 class Gemini(commands.Cog):
@@ -53,21 +97,21 @@ class Gemini(commands.Cog):
 
         try:
             logger.info(f"User {interaction.user.id} asking: {prompt[:50]}...")
-            response = await self.gemini.generate(prompt)
 
-            # Truncate if too long for Discord
-            if len(response) > MAX_RESPONSE_LENGTH:
-                response = response[: MAX_RESPONSE_LENGTH - 100]
-                response += "\n\n*[Response truncated due to length]*"
+            # Show typing indicator while generating
+            async with interaction.channel.typing():
+                response = await self.gemini.generate(prompt)
 
-            # Create embed for nicer formatting
-            embed = discord.Embed(
-                description=response,
-                color=discord.Color.blue(),
-            )
-            embed.set_footer(text=f"Prompt: {prompt[:100]}...")
+            # Split into multiple messages if needed
+            chunks = split_response(response)
 
-            await interaction.followup.send(embed=embed)
+            # Send first chunk as followup to the interaction
+            await interaction.followup.send(chunks[0])
+
+            # Send remaining chunks as regular messages
+            for chunk in chunks[1:]:
+                async with interaction.channel.typing():
+                    await interaction.channel.send(chunk)
 
         except Exception as e:
             logger.error(f"Gemini error: {e}")
