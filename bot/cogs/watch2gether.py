@@ -57,16 +57,10 @@ class Watch2Gether(commands.Cog):
             room = await self.w2g.create_room(url)
 
             embed = discord.Embed(
-                title="Watch2Gether Room Created",
-                description="Click the link below to join the room!",
-                color=discord.Color.green(),
+                title="Watch2Gether",
+                description=f"**{interaction.user.display_name}** created a room!\n\n[Join Room]({room.url})",
+                color=discord.Color.from_rgb(253, 189, 0)
             )
-            embed.add_field(name="Room Link", value=room.url, inline=False)
-
-            if url:
-                embed.add_field(name="Preloaded Video", value=url, inline=False)
-
-            embed.set_footer(text=f"Created by {interaction.user.display_name}")
 
             await interaction.followup.send(embed=embed)
             logger.info(
