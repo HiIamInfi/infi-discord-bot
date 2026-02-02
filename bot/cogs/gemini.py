@@ -73,6 +73,73 @@ class Gemini(commands.Cog):
         """Get the Gemini service from the bot."""
         return getattr(self.bot, "gemini", None)
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """Handle messages that reply to another message and mention the bot.
+
+        Args:
+            message: The incoming message.
+        """
+        # Ignore bot messages
+        if message.author.bot:
+            return
+
+        # Check if bot is mentioned
+        if not self.bot.user or self.bot.user not in message.mentions:
+            return
+
+        # Check if it's a reply to another message
+        if not message.reference or not message.reference.message_id:
+            return
+
+        if self.gemini is None:
+            return
+
+        # Get the referenced message
+        try:
+            referenced = await message.channel.fetch_message(message.reference.message_id)
+        except discord.NotFound:
+            return
+
+        # Extract the user's question (remove the bot mention)
+        question = message.content
+        for mention in message.mentions:
+            question = question.replace(f"<@{mention.id}>", "").replace(f"<@!{mention.id}>", "")
+        question = question.strip()
+
+        if not question:
+            question = "What do you think about this?"
+
+        # Build the prompt with context
+        prompt = f"""Someone is asking about this message:
+
+---
+**{referenced.author.display_name}** said:
+{referenced.content}
+---
+
+Their question: {question}"""
+
+        logger.info(f"User {message.author.id} asking about message {referenced.id}: {question[:50]}...")
+
+        try:
+            async with message.channel.typing():
+                response = await self.gemini.generate(prompt)
+
+            chunks = split_response(response)
+
+            # Reply to the user's message
+            await message.reply(chunks[0], mention_author=False)
+
+            # Send remaining chunks as follow-ups
+            for chunk in chunks[1:]:
+                async with message.channel.typing():
+                    await message.channel.send(chunk)
+
+        except Exception as e:
+            logger.error(f"Gemini reply error: {e}")
+            await message.reply(f"Sorry, I couldn't process that: {e}", mention_author=False)
+
     @app_commands.command(name="ask", description="Ask Gemini AI a question")
     @app_commands.describe(prompt="Your question or prompt for the AI")
     async def ask(
