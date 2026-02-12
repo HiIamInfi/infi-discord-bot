@@ -3,9 +3,10 @@ FROM python:3.14-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PYTHONUNBUFFERED=1
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Create non-root user
 RUN groupadd --gid 1000 botuser && \
@@ -14,9 +15,9 @@ RUN groupadd --gid 1000 botuser && \
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies (cached layer)
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev
 
 # Copy application code
 COPY bot/ bot/
@@ -28,4 +29,4 @@ RUN mkdir -p /app/data && chown -R botuser:botuser /app
 USER botuser
 
 # Run the bot
-CMD ["python", "-m", "bot.main"]
+CMD ["uv", "run", "python", "-m", "bot.main"]
