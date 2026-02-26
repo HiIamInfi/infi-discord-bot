@@ -80,11 +80,9 @@ docker build -t infi-discord-bot .
 
 Or run locally:
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+uv sync
 cp .env.example .env  # edit with your tokens
-python -m bot.main
+uv run python -m bot.main
 ```
 
 ## Getting API Keys
